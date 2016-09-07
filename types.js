@@ -50,3 +50,9 @@ declare class Response extends Stream {
   render(view: string, locals?: Object, callback?: Function): void;
   send(data: Object): void;
 }
+
+declare module 'jQuery' {
+  declare function $(obj: any): any;
+}
+
+const $ = require('js/jquery.min.js').$;

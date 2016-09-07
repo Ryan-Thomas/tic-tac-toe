@@ -1,5 +1,6 @@
 'use strict';
 
+// const ui = require('../build/ui.js').ui;
 var numberOfSquares = 9;
 
 // Represents a state in the game

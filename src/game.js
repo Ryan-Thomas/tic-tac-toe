@@ -1,10 +1,11 @@
 // @flow
 
+// const ui = require('../build/ui.js').ui;
 const numberOfSquares = 9;
 
 // Represents a state in the game
 // @param old [State]: Old state to initialize the new state
-function State(old: any) {
+function State(old: any) { // eslint-disable-line
   // public: the player whose turn it is
   this.turn = '';
 
@@ -91,3 +92,71 @@ function State(old: any) {
     return false;
   };
 }
+
+// Constructs a game object to be played
+// @param autoPlayer [AIPlayer]: The ai player for the game
+function Game(autoPlayer: any) { // eslint-disable-line
+  // public: initialize the ai player for this game
+  this.ai = autoPlayer;
+
+  // public: initialize an empty board state
+  this.currentState = new State();
+
+  // 'E' stands for an empty board cell
+  this.currentState.board = ['E', 'E', 'E',
+                             'E', 'E', 'E',
+                             'E', 'E', 'E'];
+
+  this.currentState.turn = 'X'; // X playes first
+
+  // Sets game status to beginning
+  this.status = 'beginning';
+
+  // Public function that advances the game to a new state
+  // @param _state [State]: The new state to advance the game to
+  this.advanceTo = function(_state) { // eslint-disable-line
+    this.currentState = _state;
+    if (_state.isTerminal()) {
+      this.status = 'ended';
+
+      if (_state.result === 'X-won') {
+        ui.switchViewTo('won');
+      } else if (_state.result === 'O-won') {
+        ui.switchViewTo('lost');
+      } else {
+        ui.switchViewTo('draw');
+      }
+    } else {
+      // The games is in progress
+      if (this.currentState.turn === 'X') {
+        ui.switchViewTo('human');
+      } else {
+        ui.switchViewTo('robot');
+
+        // Notify the AI that it is its turn
+        this.ai.notify('O');
+      }
+    }
+  };
+
+  // Start the game
+  this.start = () => {
+    if (this.status === 'beginning') {
+      // call advanceTo with initial state
+      this.advanceTo(this.currentState);
+      this.status = 'running';
+    }
+  };
+}
+
+Game.score = function(_state) { // eslint-disable-line
+  if (_state.result === 'X-won') {
+    // The x player won
+    return 10 - _state.oMovesCount;
+  } else if (_state.result === 'O-won') {
+    // the x player list-group-item-state
+    return -10 + _state.oMovesCount;
+  }
+  // it's a draw
+  return 0;
+};
