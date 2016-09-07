@@ -1,9 +1,5 @@
 // @flow
 
-declare class Err {
-  message: string;
-}
-
 declare class Cursor {
   toArray(callback: Function): void;
 }
@@ -27,4 +23,30 @@ declare class Documents extends Array<any> {
 
 declare class MongoClient {
   connect(url: string, callback: Function): void;
+}
+
+declare class Socket {
+  write(data: any): void;
+  end(data?: any): void;
+}
+
+declare class Stream {
+  pipe(dest: Stream): Stream;
+}
+
+declare class ReadStream extends Stream {}
+
+declare class Request extends Stream {
+  url: string;
+  body: any;
+  params: Object;
+  query: Object;
+}
+
+declare class Response extends Stream {
+  writeHead(statusCode: number, headers?: Object, statusMessage?: string): void;
+  write(data: any): void;
+  end(data?: any, encoding?: string, callback?: Function): void;
+  render(view: string, locals?: Object, callback?: Function): void;
+  send(data: Object): void;
 }

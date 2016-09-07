@@ -1,167 +1,95 @@
-"use strict";
+'use strict';
 
-// Global variables
-var gameInProgress = false;
-// userToken represents whether the user has chosen X or O.
-var userToken = "";
-var cpuToken = "";
-var boardArray = [[NaN, NaN, NaN], [NaN, NaN, NaN], [NaN, NaN, NaN]];
-// 0 if CPU's turn, 1 if player's turn
-var turn = 0;
+var numberOfSquares = 9;
 
-$(window).load(function () {
-  $('#tokenSelection').modal('show');
-  $('#chooseO').on('click', function () {
-    setToken('O');
-  });
-  $('#chooseX').on('click', function () {
-    setToken('X');
-  });
-  $(".cell").on('click', placeToken);
-});
+// Represents a state in the game
+// @param old [State]: Old state to initialize the new state
+function State(old) {
+  var _this = this;
 
-// This function sets whether the user will place x's or o's
-function setToken(token) {
-  userToken = token;
-  token === 'X' ? cpuToken = 'O' : cpuToken = 'X';
-  switch (token) {
-    case 'X':
-      cpuToken = 'O';
-      break;
-    case 'O':
-      cpuToken = 'X';
-      break;
-    default:
-      throw new Error("token must be x or o");
+  // public: the player whose turn it is
+  this.turn = '';
+
+  // public: The number of moves of the AI player
+  this.turn = '';
+
+  // public: the number of moves the AI player has made
+  this.oMovesCount = 0;
+
+  // public: the result of the game in this state
+  this.result = 'still running';
+
+  // public: the board configuration in this state
+  this.board = [];
+
+  // Begin Object Construction
+  if (typeof old !== 'undefined') {
+    // if the state is constructed using a copy of another state
+    var len = old.board.length;
+    this.board = new Array(len);
+    for (var i = 0; i < len; i++) {
+      this.board[i] = old.board[i];
+    }
+
+    this.oMovesCount = old.oMovesCount;
+    this.result = old.result;
+    this.turn = old.turn;
   }
-}
+  // End Object Construction
 
-// This function places a token onto the board and checks whether the game ended
-// It simulates a full turn of the game
-function placeToken() {
-  if (userToken === 'X' || userToken === 'O') {
-    var coordinates = this.id;
-    var x = parseInt(coordinates.charAt(0));
-    var y = parseInt(coordinates.charAt(1));
-    if (placeAtCoordinates(x, y, boardArray, userToken)) {
-      if (!checkWinner("You")) {
-        cpuPlaceToken();
-        checkWinner("CPU");
+  // Public: advances the turn in the state
+  this.advanceTurn = function () {
+    _this.turn = _this.turn === 'X' ? 'O' : 'X';
+  };
+
+  // public function that enumberates the empty cells in state
+  // @return [Array] indices of all empty cells"
+  this.emptyCells = function () {
+    var indexes = [];
+    for (var _i = 0; _i < numberOfSquares; _i++) {
+      if (_this.board[_i] === 'E') {
+        indexes.push(_i);
       }
     }
-  } else {
-    throw new Error("token must be x or o");
-  }
-}
+    return indexes;
+  };
 
-// Places a token at the specified coordinates
-// Returns true if the token was placed, false if space was already taken and token could not
-// be placed
-function placeAtCoordinates(x, y, array, token) {
-  if (array[x][y] === 'X' || array[x][y] === 'O') {
+  // public function that checks if the state is a terminal state or not
+  // The state result is updated to reflect the result of the game
+  // @returns [Boolean]: True if it's terminal, false otherwise
+  this.isTerminal = function () {
+    var B = _this.board;
+
+    // check rows
+    for (var _i2 = 0; _i2 <= 6; _i2 += 3) {
+      if (B[_i2] !== 'E' && B[_i2] === B[_i2 + 1] && B[_i2 + 1] === B[_i2 + 2]) {
+        _this.result = B[_i2] + '-won';
+        return true;
+      }
+    }
+
+    // check columns
+    for (var _i3 = 0; _i3 <= 2; _i3++) {
+      if (B[_i3] !== 'E' && B[_i3] === B[_i3 + 3] && B[_i3 + 3] === B[_i3 + 6]) {
+        _this.result = B[_i3] + '-won'; // update the state result
+        return true;
+      }
+    }
+
+    // check diagonals
+    for (var _i4 = 0, j = 4; _i4 <= 2; _i4 = _i4 + 2, j = j - 2) {
+      if (B[_i4] !== 'E' && B[_i4] === B[_i4 + j] && B[_i4 + j] === B[_i4 + 2 * j]) {
+        _this.result = B[_i4] + '-won'; // update the state result
+        return true;
+      }
+    }
+
+    var available = _this.emptyCells();
+    if (available.length === 0) {
+      // the game is draw
+      _this.result = 'draw'; // update the state result
+      return true;
+    }
     return false;
-  } else {
-    // place token on array board
-    array[x][y] = token;
-    // place token on DOM board
-    var id = "" + x + y;
-    document.getElementById(id).textContent = token;
-    return true;
-  }
-}
-
-// Places a token on behalf of the cpu
-function cpuPlaceToken() {
-  var x = random(boardArray.length);
-  var y = random(boardArray.length);
-  while (!placeAtCoordinates(x, y, boardArray, cpuToken)) {
-    x = random(boardArray.length);
-    y = random(boardArray.length);
-  }
-}
-
-// Returns an integer between 0 and max
-function random(max) {
-  return Math.floor(Math.random() * max);
-}
-
-// Checks whether the game has ended. Alerts whether a player has won and clears the boardArray
-// If game has not ended, nothing is done
-// Doesn't need to check which player won because only the player who made the last move can win
-function checkWinner(player) {
-  if (checkDiagonals(boardArray) || checkRows(boardArray)) {
-    alert(player + " won");
-    clearBoard();
-    return true;
-  } else {
-    var transposed = transpose(boardArray);
-    if (checkRows(transposed)) {
-      alert(player + " won");
-      clearBoard();
-      return true;
-    } else if (boardFull(boardArray)) {
-      alert("Tie");
-      clearBoard();
-      return true;
-    } else {
-      return false;
-    }
-  }
-}
-
-// Returns whether the diagonal from the top left to bottom right contains a three-in-a-row
-function checkDiagonals(array) {
-  if (array[0][2] === array[1][1] && array[1][1] === array[2][0]) {
-    return true;
-  } else if (array[0][0] === array[1][1] && array[1][1] === array[2][2]) {
-    return true;
-  }
-  return false;
-}
-
-// Returns whether any of the rows of boardArray contains a three-in-a-row
-function checkRows(array) {
-  for (var i = 0; i < array.length; i++) {
-    var currentRow = array[i];
-    if (currentRow[0] === currentRow[1] && currentRow[1] === currentRow[2]) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Transposes boardArray to make the rows into columns
-function transpose(array) {
-  return array[0].map(function (col, i) {
-    return array.map(function (row) {
-      return row[i];
-    });
-  });
-}
-
-// Returns whether every square in the board is full
-function boardFull(array) {
-  for (var i = 0; i < array.length; i++) {
-    for (var j = 0; j < array.length; j++) {
-      if (array[i][j] !== 'X' && array[i][j] !== 'O') {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-// Clears all tokens and resets the boardArray
-function clearBoard() {
-  // clear boardArray
-  for (var i = 0; i < boardArray.length; i++) {
-    for (var j = 0; j < boardArray[i].length; j++) {
-      boardArray[i][j] = NaN;
-    }
-  }
-  // clear DOM board
-  var cells = document.getElementsByClassName("cell");
-  for (var i = 0; i < cells.length; i++) {
-    cells[i].textContent = "";
-  }
+  };
 }
