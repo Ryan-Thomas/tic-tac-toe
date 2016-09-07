@@ -2,8 +2,6 @@
 
 /* eslint-env jquery */
 
-var ui = require('../build/ui.js').ui;
-
 // object to contain all items accessable to all control functions
 var globals = {};
 

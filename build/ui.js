@@ -1,7 +1,5 @@
 'use strict';
 
-var $ = require('../js/jquery.min').$;
-
 // ui object encloses all UI related methods and attributes
 var ui = {};
 
