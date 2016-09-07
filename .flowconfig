@@ -1,0 +1,11 @@
+[ignore]
+
+js/*.js
+
+[include]
+
+[libs]
+
+./types.js
+
+[options]

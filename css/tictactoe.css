@@ -1,0 +1,39 @@
+body {
+    background-color: black;
+    color: #6600cc;
+}
+
+#board {
+    background-color: #666699;
+    height: 600px;
+    margin-right: auto;
+    margin-left: auto;
+    margin-top: 50px;
+    width: 600px;
+}
+
+.cell {
+    background-color: black;
+    display: inline-block;
+    float: left;
+    font-size: 90pt;
+    height: 30%;
+    line-height: 180px;
+    margin-left: 2.5%;
+    margin-top: 2.5%;
+    text-align: center;
+    width: 30%;
+}
+
+.no-select {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* IE/Edge */
+    user-select: none;           /* non-prefixed version, currently
+                                  not supported by any browser */
+}
+
+.modal-header, .modal-footer {
+    text-align: center;
+}
